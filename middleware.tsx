@@ -32,11 +32,20 @@ const isProtectedRoute = createRouteMatcher([
 //     }
 // });
 export default clerkMiddleware(async(auth, req)=>{
-    if(!isProtectedRoute(req)) return;
-    
-    const { userId, redirectToSignIn } = await auth();
-    if(!userId) {
-        return redirectToSignIn();
+   // 1. Get the current URL pathname
+    const { pathname } = req.nextUrl;
+
+    // 2. Explicitly bypass Clerk authentication for Inngest API endpoint
+    if (pathname.startsWith('/api/inngest')) {
+        return; 
+    }
+
+    // 3. Protect your dashboard/account/transaction routes
+    if (isProtectedRoute(req)) {
+        const { userId, redirectToSignIn } = await auth();
+        if (!userId) {
+            return redirectToSignIn();
+        }
     }
 });
 
